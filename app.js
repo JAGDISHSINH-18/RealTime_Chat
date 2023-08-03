@@ -1,34 +1,29 @@
 const express = require('express');
+const axios = require('axios');
 const app = express();
 const port = 3000;
-
-const quotes = [
-  "Be the change you wish to see in the world. - Mahatma Gandhi",
-  "The only limit to our realization of tomorrow will be our doubts of today. - Franklin D. Roosevelt",
-  "Believe you can and you're halfway there. - Theodore Roosevelt",
-  "The future belongs to those who believe in the beauty of their dreams. - Eleanor Roosevelt",
-  "The only way to do great work is to love what you do. - Steve Jobs",
-  "Success is not final, failure is not fatal: It is the courage to continue that counts. - Winston Churchill",
-  // Add more quotes as desired
-];
-
-function getRandomQuote() {
-  return quotes[Math.floor(Math.random() * quotes.length)];
-}
+const apiKey = '4899a677789f75fbb6744686ec097d29'; // Replace with your actual API key
 
 app.use(express.static('public'));
+app.set('view engine', 'ejs');
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+app.get('/', async (req, res) => {
+  try {
+    const location = 'Moscow'; // Default location for initial testing
+    const weatherData = await getWeatherData(location);
+    res.render('index', { weather: weatherData });
+  } catch (error) {
+    res.render('index', { weather: null, error: 'Weather data not found.' });
+  }
 });
 
-app.get('/quote', (req, res) => {
-  const quote = getRandomQuote();
-  res.json({ quote });
-});
+async function getWeatherData(location) {
+  const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${apiKey}`;
+  const response = await axios.get(apiUrl);
+  const weatherData = response.data;
+  return weatherData;
+}
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
-
-
